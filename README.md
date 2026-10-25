@@ -33,3 +33,16 @@ Kamerayı açar, "Space" ile `dataset/miyav/image_X.jpg` gibi resimler çeker, "
 Kamerayı açar, her karede yüzleri tanır, `encodings.pickle` ile eşleştirir, tanınanları ekranda sarı kutuyla gösterir (örneğin "me" gibi), "q" ile kapanır. Çalıştırmak için: `python recognize_from_camera.py`.
 
 ![Online Tanıma Örneği](https://github.com/CelciusZ/_train_face_reg/blob/master/output.jpg)
+## Face redaction: `redact_image.py`
+Detects faces with the Haar cascade, pads each box by 10%, reduces it to 8x8 blocks and blurs it. Pixels outside the boxes are not touched. The script measures its own output:
+
+```
+python redact_image.py test_resmi.jpg redacted.jpg
+faces detected in input:    1
+faces detected after redact: 0
+max pixel change outside mask before encoding: 0
+PSNR outside mask after JPEG encoding: 56.3 dB
+redacted area: 18.6% of frame
+```
+
+![Redacted output](https://github.com/CelciusZ/_train_face_reg/blob/master/redacted.jpg)
