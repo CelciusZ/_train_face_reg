@@ -1,38 +1,54 @@
-# Yüz Tanıma Projesi
+# Face Detection & Recognition
 
-Bu proje, Python ile yüz tanıma yapar. `face_recognition` ve OpenCV ile yazıldı. Eğitim, offline (resimden) ve online (kameradan) tanıma içerir.
+**English** | [Türkçe](README.tr.md)
 
-## Projenin Yapısı
-- `dataset/`: Yüz verilerinin durduğu klasör. İçinde alt klasörler (örneğin `miyav/`) ve resimler (örneğin `dataset/miyav/image_0.jpg`) var.
-- `train_model.py`: `dataset`teki resimleri işleyip `encodings.pickle` dosyasına model kaydeder.
-- `capture_images.py`: Kameradan resim çeker, `dataset/miyav/` gibi alt klasörlere kaydeder.
-- `recognize_from_image.py`: `test_resmi.jpg`yi tanır, `output.jpg`ye yazar.
-- `recognize_from_camera.py`: Kameradan gerçek zamanlı yüz tanır, ekranda gösterir.
-- `test_resmi.jpg`: Test için resim. [Bak](https://github.com/CelciusZ/_train_face_reg/blob/master/test_resmi.jpg)
-- `output.jpg`: Tanıma sonrası işaretlenmiş resim. [Bak](https://github.com/CelciusZ/_train_face_reg/blob/master/output.jpg)
-- `encodings.pickle`: Eğitilmiş modelin dosyası.
+Face detection and recognition in Python, built with `face_recognition` (dlib) and OpenCV. It covers enrolment, recognition from an image and from a live camera, and face redaction.
 
-## `dataset` Klasörü Ne İşe Yarar?
-`dataset`, modelin tanıyacağı yüzlerin resimlerini saklar. Alt klasörler (mesela `miyav/`) o kişinin resimlerini içerir. Örneğin, `dataset/miyav/` klasöründe kameradan çekilen resimler durur. Kameradan veri toplamak için `capture_images.py` kullanılır: kodu çalıştır, "Space"e bas, resimler `dataset/miyav/image_X.jpg` gibi kaydedilir.
+## Project structure
+- `dataset/`: enrolment images, one subfolder per person (for example `dataset/me/image_0.jpg`). The folder name is the label.
+- `capture_images.py`: captures webcam images into `dataset/<name>/`.
+- `train_model.py`: encodes the faces in `dataset/` and saves them to `encodings.pickle`.
+- `recognize_from_image.py`: recognises faces in `test_resmi.jpg` and writes `output.jpg`.
+- `recognize_from_camera.py`: real-time recognition from the webcam.
+- `redact_image.py`: blurs every detected face and measures the result.
+- `haarcascade_frontalface_default.xml`: OpenCV Haar cascade used by `redact_image.py`.
+- `test_resmi.jpg`, `output.jpg`, `redacted.jpg`: test image, recognition output and redaction output.
+- `encodings.pickle`: the enrolled face encodings.
 
-![Dataset Örneği](https://github.com/CelciusZ/_train_face_reg/blob/master/test_resmi.jpg)
+## Requirements
+```
+pip install face_recognition opencv-python imutils numpy
+```
+`face_recognition` depends on dlib, which needs CMake and a C++ compiler on Windows.
 
-## Eğitim: `train_model.py`
-`dataset`teki resimleri tarar, `face_recognition` ile yüzleri bulur (`hog` modeli), özellik vektörlerini çıkarır, `encodings.pickle`a yazar. Çalıştırmak için: `python train_model.py`.
+## Collecting enrolment images: `capture_images.py`
+Opens the webcam. Space saves a frame as `dataset/<name>/image_X.jpg` and Esc quits.
+```
+python capture_images.py
+```
 
-## Kameradan Veri Toplama: `capture_images.py`
-Kamerayı açar, "Space" ile `dataset/miyav/image_X.jpg` gibi resimler çeker, "ESC" ile çıkar. Çalıştırmak için: `python capture_images.py`.
+## Encoding: `train_model.py`
+Walks `dataset/`, finds faces with the HOG detector, computes a 128-d encoding for each face and writes them to `encodings.pickle`. Images that can't be read, contain no face or fail to encode are skipped with a warning.
+```
+python train_model.py
+```
 
-## Offline Tanıma: `recognize_from_image.py`
-`test_resmi.jpg`yi okur, `encodings.pickle` ile karşılaştırır, tanınan yüzleri sarı kutuyla işaretler, `output.jpg`ye kaydeder, ekranda gösterir. Çalıştırmak için: `python recognize_from_image.py`.
+## Recognition from an image: `recognize_from_image.py`
+Reads `test_resmi.jpg`, compares each face with `encodings.pickle`, draws a yellow box with the recognised name and saves `output.jpg`.
+```
+python recognize_from_image.py
+```
 
-![Test Resmi](https://github.com/CelciusZ/_train_face_reg/blob/master/test_resmi.jpg)
-![Çıktı Resmi](https://github.com/CelciusZ/_train_face_reg/blob/master/output.jpg)
+| Input | Output |
+|---|---|
+| ![Input](test_resmi.jpg) | ![Output](output.jpg) |
 
-## Online Tanıma: `recognize_from_camera.py`
-Kamerayı açar, her karede yüzleri tanır, `encodings.pickle` ile eşleştirir, tanınanları ekranda sarı kutuyla gösterir (örneğin "me" gibi), "q" ile kapanır. Çalıştırmak için: `python recognize_from_camera.py`.
+## Live recognition: `recognize_from_camera.py`
+Opens the webcam and recognises faces in every frame. `q` quits.
+```
+python recognize_from_camera.py
+```
 
-![Online Tanıma Örneği](https://github.com/CelciusZ/_train_face_reg/blob/master/output.jpg)
 ## Face redaction: `redact_image.py`
 Detects faces with the Haar cascade, pads each box by 10%, reduces it to 8x8 blocks and blurs it. Pixels outside the boxes are not touched. The script measures its own output:
 
@@ -45,4 +61,4 @@ PSNR outside mask after JPEG encoding: 56.3 dB
 redacted area: 18.6% of frame
 ```
 
-![Redacted output](https://github.com/CelciusZ/_train_face_reg/blob/master/redacted.jpg)
+![Redacted output](redacted.jpg)
